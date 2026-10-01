@@ -1,19 +1,626 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>MemberEra</title>
-  <style>
-    body { font-family: sans-serif; background: #1e1f22; color: #fff; 
-           display: flex; align-items: center; justify-content: center; 
-           min-height: 100vh; margin: 0; text-align: center; }
-    h1 { color: #5865F2; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemberEra — Free Members For Your Server</title>
+<link rel="icon" type="image/png" href="/bot.png">
+<meta name="description" content="MemberEra brings real members to your Discord server. Free, fast, and easy.">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue: #3B82F6;
+  --blue-light: #60A5FA;
+  --blue-glow: rgba(59, 130, 246, 0.5);
+  --yellow: #FACC15;
+  --yellow-light: #FDE047;
+  --yellow-glow: rgba(250, 204, 21, 0.5);
+  --bg: #0a0e1a;
+  --bg-2: #111827;
+  --card: #1a1f2e;
+  --border: #2a3142;
+  --text: #e5e7eb;
+  --text-dim: #9ca3af;
+}
+
+html, body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  line-height: 1.6;
+}
+
+/* Animated background blobs */
+.bg-blobs {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  animation: float 20s ease-in-out infinite;
+}
+.blob-1 {
+  width: 500px; height: 500px;
+  background: var(--blue);
+  top: -200px; left: -200px;
+  animation-delay: 0s;
+}
+.blob-2 {
+  width: 400px; height: 400px;
+  background: var(--yellow);
+  bottom: -150px; right: -150px;
+  animation-delay: -10s;
+}
+.blob-3 {
+  width: 300px; height: 300px;
+  background: var(--blue-light);
+  top: 50%; left: 60%;
+  animation-delay: -5s;
+  opacity: 0.25;
+}
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, -40px) scale(1.1); }
+  66% { transform: translate(-40px, 60px) scale(0.9); }
+}
+
+/* Grid overlay */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+/* Nav */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(10, 14, 26, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: 0.5px;
+}
+.nav-brand img {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+}
+.nav-brand span {
+  background: linear-gradient(90deg, var(--blue-light), var(--yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.nav-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.nav-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--blue-light); }
+@media (max-width: 600px) {
+  .nav-links { display: none; }
+}
+
+/* Hero */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 24px 60px;
+  position: relative;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: fadeUp 0.8s ease-out;
+}
+.hero-badge .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+
+.hero-logo {
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  border: 3px solid rgba(59, 130, 246, 0.4);
+  box-shadow:
+    0 0 60px rgba(59, 130, 246, 0.4),
+    0 0 100px rgba(250, 204, 21, 0.2);
+  margin-bottom: 32px;
+  animation: fadeUp 0.9s ease-out, logoFloat 4s ease-in-out infinite;
+  position: relative;
+}
+.hero-logo::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 28px;
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  animation: logoRotate 8s linear infinite;
+}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+@keyframes logoRotate {
+  0% { transform: rotate(0deg); opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0.5; }
+}
+
+.hero h1 {
+  font-size: clamp(32px, 6vw, 64px);
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  animation: fadeUp 1s ease-out;
+  letter-spacing: -1px;
+}
+.hero h1 .gradient {
+  background: linear-gradient(135deg, var(--blue-light) 0%, var(--yellow) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p {
+  font-size: clamp(15px, 2vw, 18px);
+  color: var(--text-dim);
+  max-width: 600px;
+  margin-bottom: 40px;
+  animation: fadeUp 1.1s ease-out;
+}
+.hero-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeUp 1.2s ease-out;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
+  color: white;
+  box-shadow: 0 4px 20px var(--blue-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--blue-glow);
+}
+.btn-secondary {
+  background: rgba(250, 204, 21, 0.1);
+  color: var(--yellow);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+.btn-secondary:hover {
+  background: rgba(250, 204, 21, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--yellow-glow);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Sections */
+section {
+  padding: 100px 24px;
+  position: relative;
+}
+.section-title {
+  text-align: center;
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 800;
+  margin-bottom: 16px;
+  letter-spacing: -0.5px;
+}
+.section-title .gradient {
+  background: linear-gradient(135deg, var(--blue-light), var(--yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.section-subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin: 0 auto 60px;
+  font-size: 15px;
+}
+
+/* Steps */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  transform: translateY(20px);
+}
+.step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.step::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue), var(--yellow));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+.step:hover::before {
+  transform: scaleX(1);
+}
+.step:hover {
+  transform: translateY(-4px);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+}
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-light));
+  color: white;
+  font-weight: 800;
+  font-size: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px var(--blue-glow);
+}
+.step h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+.step p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+.step code {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--blue-light);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Features grid */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.feature {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 24px;
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.feature.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.feature:hover {
+  border-color: rgba(250, 204, 21, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(250, 204, 21, 0.1);
+}
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(250, 204, 21, 0.1);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 16px;
+}
+.feature h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.feature p {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* CTA */
+.cta {
+  text-align: center;
+  padding: 100px 24px;
+}
+.cta-card {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 60px 40px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(250, 204, 21, 0.05));
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+.cta-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.1), transparent, rgba(250, 204, 21, 0.1), transparent);
+  animation: rotate 8s linear infinite;
+  z-index: -1;
+}
+@keyframes rotate {
+  to { transform: rotate(360deg); }
+}
+.cta h2 {
+  font-size: clamp(24px, 4vw, 36px);
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+.cta p {
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  font-size: 15px;
+}
+
+/* Footer */
+footer {
+  padding: 40px 24px;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+footer a {
+  color: var(--blue-light);
+  text-decoration: none;
+}
+footer a:hover { text-decoration: underline; }
+
+/* Scroll reveal setup */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>
 </head>
 <body>
-  <div>
-    <h1>🤖 MemberEra</h1>
-    <p>Demo website is live.</p>
-    <p>Domain: memberera.kdns.fr</p>
+
+<!-- Background -->
+<div class="bg-blobs">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+<div class="bg-grid"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="nav-brand">
+    <img src="/bot.png" alt="MemberEra">
+    <span>MEMBERERA</span>
   </div>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#features">Features</a>
+    <a href="#start">Get Started</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="dot"></span>
+    Free Forever
+  </div>
+  <img src="/bot.png" alt="MemberEra" class="hero-logo">
+  <h1>Grow Your Server<br>With <span class="gradient">Real Members</span></h1>
+  <p>MemberEra brings real, active members to your Discord server. No bots, no fake accounts. Just run one command and watch your community grow.</p>
+  <div class="hero-actions">
+    <a href="#how" class="btn btn-primary">
+      ▶ Get Started
+    </a>
+    <a href="https://discord.gg/G32jHZwsee" target="_blank" class="btn btn-secondary">
+      ⚡ Join Support Server
+    </a>
+  </div>
+</section>
+
+<!-- How It Works -->
+<section id="how">
+  <h2 class="section-title reveal">How It <span class="gradient">Works</span></h2>
+  <p class="section-subtitle reveal">Get free members for your server in three simple steps.</p>
+  <div class="steps">
+    <div class="step reveal">
+      <div class="step-number">1</div>
+      <h3>Type <code>!authlink</code></h3>
+      <p>Head to the <strong>#authorize</strong> channel in our Discord server and type the command. The bot will send you an authorization link.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-number">2</div>
+      <h3>Authorize Your Account</h3>
+      <p>Click the link and authorize your Discord account. You'll get an authorization key — copy it and paste it back with <code>!auth &lt;key&gt;</code>.</p>
+    </div>
+    <div class="step reveal">
+      <div class="step-number">3</div>
+      <h3>Run <code>!order &lt;server_id&gt;</code></h3>
+      <p>Go to the <strong>farm</strong> channel and run the order command with your server ID. Sit back and watch members join.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <h2 class="section-title reveal">Why <span class="gradient">MemberEra</span></h2>
+  <p class="section-subtitle reveal">Everything you need to grow your community.</p>
+  <div class="features">
+    <div class="feature reveal">
+      <div class="feature-icon">🚀</div>
+      <h3>Lightning Fast</h3>
+      <p>Members are added within seconds. No waiting, no delays.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">💯</div>
+      <h3>100% Free</h3>
+      <p>No payments, no subscriptions, no hidden fees. Ever.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">👥</div>
+      <h3>Real Members</h3>
+      <p>Real Discord users from our community. No bots, no fake accounts.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">🔒</div>
+      <h3>Secure OAuth</h3>
+      <p>We use Discord's official OAuth2 — your account stays safe.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">🎯</div>
+      <h3>Easy To Use</h3>
+      <p>Three commands. That's all you need to grow your server.</p>
+    </div>
+    <div class="feature reveal">
+      <div class="feature-icon">⚡</div>
+      <h3>Instant Orders</h3>
+      <p>Queue system processes orders in the order they're placed.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="start" class="cta">
+  <div class="cta-card reveal">
+    <h2>Ready To Grow?</h2>
+    <p>Join our Discord server and run <code style="background: rgba(59,130,246,0.15); color: var(--blue-light); padding: 3px 8px; border-radius: 6px;">!authlink</code> to get started. It takes less than a minute.</p>
+    <a href="https://discord.gg/G32jHZwsee" target="_blank" class="btn btn-primary">
+      Join Discord Server
+    </a>
+  </div>
+</section>
+
+<footer>
+  <p>MemberEra © 2026 &nbsp;·&nbsp; <a href="https://discord.gg/G32jHZwsee">Support Server</a></p>
+</footer>
+
+<script>
+// Scroll reveal
+const revealElements = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, i * 80);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+revealElements.forEach(el => observer.observe(el));
+</script>
+
 </body>
 </html>
