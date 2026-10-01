@@ -53,14 +53,14 @@ async function redisGet(key) {
   return data.result;
 }
 
-async function redisSet(key, value) {
+async function redisSet(key, rawString) {
   const res = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${UPSTASH_TOKEN}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify(value)
+    body: rawString
   });
   return res.ok;
 }
