@@ -38,21 +38,32 @@ p { font-size: 14px; color: #b5bac1; margin-bottom: 8px; }
 </div>
 
 <script>
-// ============================================
-// PASTE YOUR UPSTASH CREDENTIALS HERE
-// ============================================
 const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
 
-// ============================================
-// Bot 2 OAuth settings
-// ============================================
-const BOT2_CLIENT_ID = "1553955545311092846";     // ← Replace with your Bot 2 Client ID
+const BOT2_CLIENT_ID = "1553955545311092846";
 const BOT2_REDIRECT_URI = "https://memberera.kdns.fr/callback2.html";
 
-// ============================================
-// Main logic
-// ============================================
+async function redisGet(key) {
+  const res = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
+  const data = await res.json();
+  return data.result;
+}
+
+async function redisSet(key, value) {
+  const res = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(value)
+  });
+  return res.ok;
+}
+
 (async function () {
   const params = new URLSearchParams(location.search);
   const code = params.get("code");
@@ -65,36 +76,20 @@ const BOT2_REDIRECT_URI = "https://memberera.kdns.fr/callback2.html";
   }
 
   try {
-    // Save Bot 1's OAuth code to Redis, keyed by state
-    const redisKey = `memberera:oauthCodes:${state}`;
-
-    // Fetch existing entry if any
-    const getRes = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(redisKey)}`, {
-      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-    });
-    const getData = await getRes.json();
-    let entry = { bot1_code: null, bot2_code: null, created_at: Date.now() };
-    if (getData.result) {
-      try { entry = JSON.parse(getData.result); } catch (_) {}
+    let oauthBlob = {};
+    const raw = await redisGet("memberera:oauthCodes");
+    if (raw) {
+      try { oauthBlob = JSON.parse(raw); } catch (_) {}
     }
 
-    entry.bot1_code = code;
-
-    // Save back to Redis
-    const setRes = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(redisKey)}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${UPSTASH_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(JSON.stringify(entry))
-    });
-
-    if (!setRes.ok) {
-      throw new Error("Failed to save code to Redis");
+    if (!oauthBlob[state]) {
+      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
     }
+    oauthBlob[state].bot1_code = code;
 
-    // Redirect to Bot 2 consent
+    const ok = await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
+    if (!ok) throw new Error("Failed to save code to Redis");
+
     const bot2Url =
       `https://discord.com/oauth2/authorize` +
       `?client_id=${BOT2_CLIENT_ID}` +
