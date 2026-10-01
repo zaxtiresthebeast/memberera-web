@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MemberEra — Authorizing</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #1e1f22; color: #dbdee1;
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  padding: 20px; font-size: 15px; line-height: 1.5; text-align: center;
+}
+.card {
+  background: #2b2d31; border-radius: 10px;
+  width: 100%; max-width: 440px; padding: 32px 28px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.3);
+}
+h1 { font-size: 18px; color: #5865F2; margin-bottom: 12px; }
+p { font-size: 14px; color: #b5bac1; margin-bottom: 8px; }
+.loader {
+  display: inline-block; width: 24px; height: 24px;
+  border: 3px solid rgba(88,101,242,.3);
+  border-top-color: #5865F2; border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin: 20px 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error { color: #ed4245; font-size: 13px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Bot 1 Authorized</h1>
+  <div class="loader"></div>
+  <p>Redirecting you to Bot 2 authorization...</p>
+  <p id="error" class="error"></p>
+</div>
+
+<script>
+// ============================================
+// PASTE YOUR UPSTASH CREDENTIALS HERE
+// ============================================
+const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
+const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
+
+// ============================================
+// Bot 2 OAuth settings
+// ============================================
+const BOT2_CLIENT_ID = "1553955545311092846";     // ← Replace with your Bot 2 Client ID
+const BOT2_REDIRECT_URI = "https://memberera.kdns.fr/callback2.html";
+
+// ============================================
+// Main logic
+// ============================================
+(async function () {
+  const params = new URLSearchParams(location.search);
+  const code = params.get("code");
+  const state = params.get("state");
+  const errorEl = document.getElementById("error");
+
+  if (!code || !state) {
+    errorEl.textContent = "Missing code or state in URL.";
+    return;
+  }
+
+  try {
+    // Save Bot 1's OAuth code to Redis, keyed by state
+    const redisKey = `memberera:oauthCodes:${state}`;
+
+    // Fetch existing entry if any
+    const getRes = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(redisKey)}`, {
+      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+    });
+    const getData = await getRes.json();
+    let entry = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    if (getData.result) {
+      try { entry = JSON.parse(getData.result); } catch (_) {}
+    }
+
+    entry.bot1_code = code;
+
+    // Save back to Redis
+    const setRes = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(redisKey)}`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${UPSTASH_TOKEN}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(JSON.stringify(entry))
+    });
+
+    if (!setRes.ok) {
+      throw new Error("Failed to save code to Redis");
+    }
+
+    // Redirect to Bot 2 consent
+    const bot2Url =
+      `https://discord.com/oauth2/authorize` +
+      `?client_id=${BOT2_CLIENT_ID}` +
+      `&redirect_uri=${encodeURIComponent(BOT2_REDIRECT_URI)}` +
+      `&response_type=code` +
+      `&scope=identify%20guilds%20guilds.join%20guilds.members.read` +
+      `&state=${state}`;
+
+    setTimeout(() => { window.location.href = bot2Url; }, 800);
+  } catch (e) {
+    errorEl.textContent = `Error: ${e.message}`;
+  }
+})();
+</script>
+</body>
+</html>
