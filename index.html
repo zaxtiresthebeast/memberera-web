@@ -3,140 +3,218 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MemberEra — Free Members For Your Server</title>
+<title>MemberEra — Free Members For Your Discord Server</title>
 <link rel="icon" type="image/png" href="/bot.png">
 <meta name="description" content="MemberEra brings real members to your Discord server. Free, fast, and easy.">
 <style>
+/* ============================================
+   BASE
+   ============================================ */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --blue: #3B82F6;
-  --blue-light: #60A5FA;
-  --blue-glow: rgba(59, 130, 246, 0.5);
+  --blue-bright: #60A5FA;
+  --blue-deep: #1E40AF;
   --yellow: #FACC15;
-  --yellow-light: #FDE047;
-  --yellow-glow: rgba(250, 204, 21, 0.5);
-  --bg: #0a0e1a;
-  --bg-2: #111827;
-  --card: #1a1f2e;
-  --border: #2a3142;
+  --yellow-bright: #FDE047;
+  --yellow-deep: #CA8A04;
+  --bg: #070a12;
+  --bg-2: #0d1220;
+  --card: #121826;
+  --card-hi: #1a2234;
+  --border: #1e2739;
+  --border-hi: #2f3a52;
   --text: #e5e7eb;
-  --text-dim: #9ca3af;
+  --text-dim: #94a3b8;
+  --text-mute: #64748b;
+  --glow-blue: rgba(59, 130, 246, 0.5);
+  --glow-yellow: rgba(250, 204, 21, 0.5);
 }
 
-html, body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
   background: var(--bg);
   color: var(--text);
+  line-height: 1.65;
   overflow-x: hidden;
-  scroll-behavior: smooth;
-  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-/* Animated background blobs */
-.bg-blobs {
+/* ============================================
+   BACKGROUND
+   ============================================ */
+.bg-layer {
   position: fixed;
   inset: 0;
   z-index: -1;
+  pointer-events: none;
+}
+
+.bg-gradient {
+  background:
+    radial-gradient(ellipse 60% 40% at 15% 15%, rgba(59, 130, 246, 0.15), transparent 60%),
+    radial-gradient(ellipse 50% 35% at 85% 85%, rgba(250, 204, 21, 0.10), transparent 60%),
+    radial-gradient(ellipse 70% 40% at 50% 50%, rgba(96, 165, 250, 0.06), transparent 70%);
+}
+
+.bg-blobs {
   overflow: hidden;
 }
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.4;
-  animation: float 20s ease-in-out infinite;
+  filter: blur(80px);
+  opacity: 0.45;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 .blob-1 {
-  width: 500px; height: 500px;
-  background: var(--blue);
-  top: -200px; left: -200px;
-  animation-delay: 0s;
+  width: 420px; height: 420px;
+  background: radial-gradient(circle, var(--blue) 0%, transparent 70%);
+  top: -120px; left: -120px;
+  animation: driftA 22s ease-in-out infinite;
 }
 .blob-2 {
-  width: 400px; height: 400px;
-  background: var(--yellow);
-  bottom: -150px; right: -150px;
-  animation-delay: -10s;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, var(--yellow) 0%, transparent 70%);
+  bottom: -100px; right: -100px;
+  animation: driftB 26s ease-in-out infinite;
 }
 .blob-3 {
-  width: 300px; height: 300px;
-  background: var(--blue-light);
-  top: 50%; left: 60%;
-  animation-delay: -5s;
-  opacity: 0.25;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, var(--blue-bright) 0%, transparent 70%);
+  top: 45%; left: 55%;
+  opacity: 0.3;
+  animation: driftC 30s ease-in-out infinite;
 }
-@keyframes float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(60px, -40px) scale(1.1); }
-  66% { transform: translate(-40px, 60px) scale(0.9); }
+@keyframes driftA {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(80px, 60px, 0) scale(1.15); }
+}
+@keyframes driftB {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-70px, -60px, 0) scale(1.1); }
+}
+@keyframes driftC {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-50px, 50px, 0); }
 }
 
-/* Grid overlay */
 .bg-grid {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
-  background-size: 60px 60px;
-  pointer-events: none;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+    linear-gradient(rgba(59, 130, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.06) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
 }
 
-/* Nav */
+.bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+}
+
+/* ============================================
+   NAV
+   ============================================ */
 nav {
   position: fixed;
   top: 0; left: 0; right: 0;
   z-index: 100;
-  padding: 16px 32px;
+  padding: 14px 28px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: rgba(10, 14, 26, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+  background: rgba(7, 10, 18, 0.72);
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.08);
+  transition: background 0.3s ease, border-color 0.3s ease;
+  transform: translateZ(0);
+}
+nav.scrolled {
+  background: rgba(7, 10, 18, 0.92);
+  border-bottom-color: rgba(59, 130, 246, 0.15);
+}
+.nav-inner {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .nav-brand {
   display: flex;
   align-items: center;
   gap: 12px;
   font-weight: 800;
-  font-size: 18px;
-  letter-spacing: 0.5px;
+  font-size: 17px;
+  letter-spacing: 0.6px;
+  text-decoration: none;
+  color: inherit;
 }
 .nav-brand img {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 2px solid rgba(59, 130, 246, 0.3);
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  border: 2px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.nav-brand:hover img {
+  transform: rotate(-6deg) scale(1.08);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
 }
 .nav-brand span {
-  background: linear-gradient(90deg, var(--blue-light), var(--yellow));
+  background: linear-gradient(90deg, var(--blue-bright), var(--yellow));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 .nav-links {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   align-items: center;
 }
 .nav-links a {
   color: var(--text-dim);
   text-decoration: none;
   font-size: 14px;
+  font-weight: 500;
+  position: relative;
   transition: color 0.2s;
+  padding: 4px 0;
 }
-.nav-links a:hover { color: var(--blue-light); }
-@media (max-width: 600px) {
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--blue-bright), var(--yellow));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-links a:hover { color: var(--blue-bright); }
+.nav-links a:hover::after { transform: scaleX(1); }
+
+@media (max-width: 720px) {
   .nav-links { display: none; }
+  nav { padding: 12px 20px; }
 }
 
-/* Hero */
+/* ============================================
+   HERO
+   ============================================ */
 .hero {
   min-height: 100vh;
   display: flex;
@@ -144,148 +222,244 @@ nav {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 120px 24px 60px;
+  padding: 120px 24px 80px;
   position: relative;
 }
+
+.hero-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 800px; height: 800px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: -1;
+  animation: heroPulse 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes heroPulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
 .hero-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 999px;
-  background: rgba(250, 204, 21, 0.1);
-  border: 1px solid rgba(250, 204, 21, 0.3);
+  background: rgba(250, 204, 21, 0.08);
+  border: 1px solid rgba(250, 204, 21, 0.28);
   color: var(--yellow);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 1px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  margin-bottom: 24px;
-  animation: fadeUp 0.8s ease-out;
-}
-.hero-badge .dot {
-  width: 6px;
-  height: 6px;
-  background: var(--yellow);
-  border-radius: 50%;
-  animation: pulse 1.5s ease-in-out infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.5); }
-}
-
-.hero-logo {
-  width: 120px;
-  height: 120px;
-  border-radius: 24px;
-  border: 3px solid rgba(59, 130, 246, 0.4);
-  box-shadow:
-    0 0 60px rgba(59, 130, 246, 0.4),
-    0 0 100px rgba(250, 204, 21, 0.2);
   margin-bottom: 32px;
-  animation: fadeUp 0.9s ease-out, logoFloat 4s ease-in-out infinite;
+  opacity: 0;
+  animation: fadeUp 0.7s 0.05s ease-out forwards;
   position: relative;
+  overflow: hidden;
 }
-.hero-logo::after {
+.hero-badge::before {
   content: '';
   position: absolute;
-  inset: -8px;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(250, 204, 21, 0.15), transparent);
+  transform: translateX(-100%);
+  animation: badgeShine 3s ease-in-out infinite;
+}
+@keyframes badgeShine {
+  0% { transform: translateX(-100%); }
+  50%, 100% { transform: translateX(200%); }
+}
+.hero-badge .dot {
+  width: 6px; height: 6px;
+  background: var(--yellow);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--yellow);
+  animation: dotPulse 1.6s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.hero-logo-wrap {
+  position: relative;
+  margin-bottom: 36px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.15s ease-out forwards;
+}
+.hero-logo-wrap::before,
+.hero-logo-wrap::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  animation: ripple 3s ease-out infinite;
+  pointer-events: none;
+}
+.hero-logo-wrap::after {
+  animation-delay: 1.5s;
+}
+@keyframes ripple {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.35); opacity: 0; }
+}
+.hero-logo {
+  width: 128px;
+  height: 128px;
   border-radius: 28px;
-  border: 1px solid rgba(250, 204, 21, 0.3);
-  animation: logoRotate 8s linear infinite;
+  border: 3px solid rgba(59, 130, 246, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(250, 204, 21, 0.15),
+    0 20px 60px rgba(59, 130, 246, 0.35),
+    0 0 80px rgba(250, 204, 21, 0.15);
+  animation: logoFloat 5s ease-in-out infinite;
+  will-change: transform;
+  display: block;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hero-logo:hover {
+  transform: rotate(-4deg) scale(1.05);
 }
 @keyframes logoFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-@keyframes logoRotate {
-  0% { transform: rotate(0deg); opacity: 0.5; }
-  50% { opacity: 1; }
-  100% { transform: rotate(360deg); opacity: 0.5; }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -14px, 0); }
 }
 
 .hero h1 {
-  font-size: clamp(32px, 6vw, 64px);
+  font-size: clamp(34px, 7vw, 72px);
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.05;
   margin-bottom: 24px;
-  animation: fadeUp 1s ease-out;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.25s ease-out forwards;
 }
 .hero h1 .gradient {
-  background: linear-gradient(135deg, var(--blue-light) 0%, var(--yellow) 100%);
+  background: linear-gradient(135deg, var(--blue-bright) 0%, var(--yellow) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 6s ease-in-out infinite;
 }
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
 .hero p {
-  font-size: clamp(15px, 2vw, 18px);
+  font-size: clamp(15px, 2.2vw, 18px);
   color: var(--text-dim);
-  max-width: 600px;
-  margin-bottom: 40px;
-  animation: fadeUp 1.1s ease-out;
+  max-width: 620px;
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: fadeUp 1s 0.35s ease-out forwards;
 }
+
 .hero-actions {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   flex-wrap: wrap;
   justify-content: center;
-  animation: fadeUp 1.2s ease-out;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 28px;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-}
-.btn-primary {
-  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-light) 100%);
-  color: white;
-  box-shadow: 0 4px 20px var(--blue-glow);
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--blue-glow);
-}
-.btn-secondary {
-  background: rgba(250, 204, 21, 0.1);
-  color: var(--yellow);
-  border: 1px solid rgba(250, 204, 21, 0.3);
-}
-.btn-secondary:hover {
-  background: rgba(250, 204, 21, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px var(--yellow-glow);
+  opacity: 0;
+  animation: fadeUp 1.1s 0.45s ease-out forwards;
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Sections */
-section {
-  padding: 100px 24px;
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 30px;
+  border-radius: 13px;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   position: relative;
+  overflow: hidden;
+  will-change: transform;
+  transform: translateZ(0);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.btn:hover::before { transform: translateX(100%); }
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue) 0%, var(--blue-bright) 100%);
+  color: white;
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-primary:hover {
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 12px 36px rgba(59, 130, 246, 0.55), inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.btn-secondary {
+  background: rgba(250, 204, 21, 0.08);
+  color: var(--yellow);
+  border: 1px solid rgba(250, 204, 21, 0.32);
+  box-shadow: 0 4px 16px rgba(250, 204, 21, 0.1);
+}
+.btn-secondary:hover {
+  background: rgba(250, 204, 21, 0.16);
+  transform: translate3d(0, -3px, 0);
+  box-shadow: 0 12px 32px rgba(250, 204, 21, 0.25);
+  border-color: rgba(250, 204, 21, 0.5);
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+section {
+  padding: 110px 24px;
+  position: relative;
+}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.section-label {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--yellow);
+  margin-bottom: 16px;
 }
 .section-title {
   text-align: center;
-  font-size: clamp(24px, 4vw, 40px);
-  font-weight: 800;
-  margin-bottom: 16px;
-  letter-spacing: -0.5px;
+  font-size: clamp(28px, 5vw, 46px);
+  font-weight: 900;
+  margin-bottom: 18px;
+  letter-spacing: -1px;
+  line-height: 1.15;
 }
 .section-title .gradient {
-  background: linear-gradient(135deg, var(--blue-light), var(--yellow));
+  background: linear-gradient(135deg, var(--blue-bright), var(--yellow));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -293,29 +467,31 @@ section {
 .section-subtitle {
   text-align: center;
   color: var(--text-dim);
-  max-width: 600px;
-  margin: 0 auto 60px;
-  font-size: 15px;
+  max-width: 620px;
+  margin: 0 auto 72px;
+  font-size: 15.5px;
 }
 
-/* Steps */
+/* ============================================
+   STEPS
+   ============================================ */
 .steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
+  position: relative;
 }
 .step {
-  background: var(--card);
+  background: linear-gradient(180deg, var(--card) 0%, var(--bg-2) 100%);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px 24px;
+  border-radius: 18px;
+  padding: 32px 26px;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(24px);
+  will-change: transform;
 }
 .step.visible {
   opacity: 1;
@@ -325,301 +501,490 @@ section {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--blue), var(--yellow));
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue-bright), var(--yellow));
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.4s ease;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.step:hover::before {
-  transform: scaleX(1);
-}
+.step:hover::before { transform: scaleX(1); }
 .step:hover {
-  transform: translateY(-4px);
-  border-color: rgba(59, 130, 246, 0.4);
-  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+  transform: translateY(-6px);
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 20px 60px rgba(59, 130, 246, 0.15);
+  background: linear-gradient(180deg, var(--card-hi) 0%, var(--bg-2) 100%);
 }
 .step-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--blue), var(--blue-light));
+  width: 44px; height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--blue), var(--blue-bright));
   color: white;
   font-weight: 800;
-  font-size: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 12px var(--blue-glow);
+  font-size: 17px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35), inset 0 1px 0 rgba(255,255,255,0.2);
+  transition: transform 0.3s ease;
+}
+.step:hover .step-number {
+  transform: rotate(-8deg) scale(1.1);
 }
 .step h3 {
   font-size: 17px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: var(--text);
+  letter-spacing: -0.2px;
 }
 .step p {
   font-size: 14px;
   color: var(--text-dim);
-  line-height: 1.6;
+  line-height: 1.7;
 }
-.step code {
+.step code, .feature code {
   background: rgba(59, 130, 246, 0.15);
-  color: var(--blue-light);
-  padding: 3px 8px;
+  color: var(--blue-bright);
+  padding: 3px 9px;
   border-radius: 6px;
   font-family: 'SF Mono', Consolas, monospace;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
+  border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
-/* Features grid */
+/* ============================================
+   FEATURES
+   ============================================ */
 .features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-  max-width: 1000px;
-  margin: 0 auto;
 }
 .feature {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 28px 24px;
-  transition: all 0.3s ease;
+  border-radius: 18px;
+  padding: 30px 26px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(24px);
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
 }
 .feature.visible {
   opacity: 1;
   transform: translateY(0);
 }
+.feature::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(250, 204, 21, 0.08), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.feature:hover::after { opacity: 1; }
 .feature:hover {
-  border-color: rgba(250, 204, 21, 0.4);
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(250, 204, 21, 0.1);
+  border-color: rgba(250, 204, 21, 0.35);
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(250, 204, 21, 0.1);
 }
 .feature-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: rgba(250, 204, 21, 0.1);
-  border: 1px solid rgba(250, 204, 21, 0.3);
+  width: 52px; height: 52px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(59, 130, 246, 0.12));
+  border: 1px solid rgba(250, 204, 21, 0.25);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  margin-bottom: 16px;
+  font-size: 24px;
+  margin-bottom: 18px;
+  transition: transform 0.3s ease;
+}
+.feature:hover .feature-icon {
+  transform: scale(1.1) rotate(-4deg);
 }
 .feature h3 {
   font-size: 16px;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  letter-spacing: -0.2px;
 }
 .feature p {
   font-size: 14px;
   color: var(--text-dim);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-/* CTA */
-.cta {
-  text-align: center;
-  padding: 100px 24px;
-}
-.cta-card {
-  max-width: 700px;
+/* ============================================
+   STATS STRIP
+   ============================================ */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 60px 40px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(250, 204, 21, 0.05));
-  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+.stat {
+  text-align: center;
+  padding: 28px 20px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.06), transparent);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+.stat.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.stat:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(59, 130, 246, 0.12);
+}
+.stat-value {
+  font-size: 36px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--blue-bright), var(--yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 6px;
+  letter-spacing: -1px;
+}
+.stat-label {
+  font-size: 12.5px;
+  color: var(--text-mute);
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-weight: 600;
+}
+
+/* ============================================
+   CTA
+   ============================================ */
+.cta-card {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 72px 40px;
+  border-radius: 28px;
   position: relative;
   overflow: hidden;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(250, 204, 21, 0.04));
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  box-shadow: 0 20px 80px rgba(59, 130, 246, 0.1);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
 }
-.cta-card::before {
-  content: '';
+.cta-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cta-glow {
   position: absolute;
-  top: -50%; left: -50%;
-  width: 200%; height: 200%;
-  background: conic-gradient(from 0deg, transparent, rgba(59, 130, 246, 0.1), transparent, rgba(250, 204, 21, 0.1), transparent);
-  animation: rotate 8s linear infinite;
+  inset: -50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(59, 130, 246, 0.15) 90deg,
+    transparent 180deg,
+    rgba(250, 204, 21, 0.15) 270deg,
+    transparent 360deg
+  );
+  animation: rotateGlow 12s linear infinite;
   z-index: -1;
+  will-change: transform;
 }
-@keyframes rotate {
+@keyframes rotateGlow {
   to { transform: rotate(360deg); }
 }
-.cta h2 {
-  font-size: clamp(24px, 4vw, 36px);
-  font-weight: 800;
-  margin-bottom: 16px;
+.cta-card h2 {
+  font-size: clamp(26px, 4.5vw, 40px);
+  font-weight: 900;
+  margin-bottom: 18px;
+  letter-spacing: -1px;
+  line-height: 1.15;
 }
-.cta p {
+.cta-card p {
   color: var(--text-dim);
-  margin-bottom: 32px;
-  font-size: 15px;
+  margin-bottom: 36px;
+  font-size: 15.5px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-/* Footer */
+/* ============================================
+   FOOTER
+   ============================================ */
 footer {
-  padding: 40px 24px;
+  padding: 48px 24px;
   text-align: center;
   border-top: 1px solid var(--border);
-  color: var(--text-dim);
+  color: var(--text-mute);
   font-size: 13px;
+  background: linear-gradient(180deg, transparent, rgba(59, 130, 246, 0.03));
 }
 footer a {
-  color: var(--blue-light);
+  color: var(--blue-bright);
   text-decoration: none;
+  transition: color 0.2s;
 }
-footer a:hover { text-decoration: underline; }
+footer a:hover { color: var(--yellow); }
+.footer-logo {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  opacity: 0.85;
+}
 
-/* Scroll reveal setup */
+/* ============================================
+   REVEAL
+   ============================================ */
 .reveal {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
 }
 .reveal.visible {
   opacity: 1;
   transform: translateY(0);
 }
+
+/* ============================================
+   MOBILE
+   ============================================ */
+@media (max-width: 640px) {
+  section { padding: 80px 20px; }
+  .hero { padding: 100px 20px 60px; }
+  .hero-logo { width: 100px; height: 100px; }
+  .step, .feature { padding: 24px 22px; }
+  .cta-card { padding: 48px 26px; }
+  .blob { filter: blur(60px); opacity: 0.35; }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 </style>
 </head>
 <body>
 
-<!-- Background -->
-<div class="bg-blobs">
+<!-- Background layers -->
+<div class="bg-layer bg-gradient"></div>
+<div class="bg-layer bg-grid"></div>
+<div class="bg-layer bg-noise"></div>
+<div class="bg-layer bg-blobs">
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
 </div>
-<div class="bg-grid"></div>
 
-<!-- Nav -->
-<nav>
-  <div class="nav-brand">
-    <img src="/bot.png" alt="MemberEra">
-    <span>MEMBERERA</span>
-  </div>
-  <div class="nav-links">
-    <a href="#how">How It Works</a>
-    <a href="#features">Features</a>
-    <a href="#start">Get Started</a>
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-brand">
+      <img src="/bot.png" alt="MemberEra" onerror="this.style.display='none'">
+      <span>MEMBERERA</span>
+    </a>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#features">Features</a>
+      <a href="#stats">Stats</a>
+      <a href="#start">Get Started</a>
+    </div>
   </div>
 </nav>
 
-<!-- Hero -->
+<!-- HERO -->
 <section class="hero">
+  <div class="hero-glow"></div>
   <div class="hero-badge">
     <span class="dot"></span>
     Free Forever
   </div>
-  <img src="/bot.png" alt="MemberEra" class="hero-logo">
+  <div class="hero-logo-wrap">
+    <img src="/bot.png" alt="MemberEra" class="hero-logo" onerror="this.style.display='none'">
+  </div>
   <h1>Grow Your Server<br>With <span class="gradient">Real Members</span></h1>
   <p>MemberEra brings real, active members to your Discord server. No bots, no fake accounts. Just run one command and watch your community grow.</p>
   <div class="hero-actions">
-    <a href="#how" class="btn btn-primary">
-      ▶ Get Started
-    </a>
-    <a href="https://discord.gg/G32jHZwsee" target="_blank" class="btn btn-secondary">
-      ⚡ Join Support Server
-    </a>
+    <a href="#how" class="btn btn-primary">▶ Get Started</a>
+    <a href="https://discord.gg/G32jHZwsee" target="_blank" rel="noopener" class="btn btn-secondary">⚡ Discord Server</a>
   </div>
 </section>
 
-<!-- How It Works -->
+<!-- HOW IT WORKS -->
 <section id="how">
-  <h2 class="section-title reveal">How It <span class="gradient">Works</span></h2>
-  <p class="section-subtitle reveal">Get free members for your server in three simple steps.</p>
-  <div class="steps">
-    <div class="step reveal">
-      <div class="step-number">1</div>
-      <h3>Type <code>!authlink</code></h3>
-      <p>Head to the <strong>#authorize</strong> channel in our Discord server and type the command. The bot will send you an authorization link.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-number">2</div>
-      <h3>Authorize Your Account</h3>
-      <p>Click the link and authorize your Discord account. You'll get an authorization key — copy it and paste it back with <code>!auth &lt;key&gt;</code>.</p>
-    </div>
-    <div class="step reveal">
-      <div class="step-number">3</div>
-      <h3>Run <code>!order &lt;server_id&gt;</code></h3>
-      <p>Go to the <strong>farm</strong> channel and run the order command with your server ID. Sit back and watch members join.</p>
+  <div class="container">
+    <div class="section-label reveal">Getting Started</div>
+    <h2 class="section-title reveal">How It <span class="gradient">Works</span></h2>
+    <p class="section-subtitle reveal">Get free members for your server in three simple steps.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-number">1</div>
+        <h3>Type <code>!authlink</code></h3>
+        <p>Head to the <strong>#authorize</strong> channel in our Discord server and type the command. The bot will send you an authorization link.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-number">2</div>
+        <h3>Authorize Your Account</h3>
+        <p>Click the link and authorize your Discord account. You'll get an authorization key — copy it and paste it back with <code>!auth &lt;key&gt;</code>.</p>
+      </div>
+      <div class="step reveal">
+        <div class="step-number">3</div>
+        <h3>Run <code>!order &lt;server_id&gt;</code></h3>
+        <p>Go to the <strong>farm</strong> channel and run the order command with your server ID. Sit back and watch members join.</p>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Features -->
+<!-- FEATURES -->
 <section id="features">
-  <h2 class="section-title reveal">Why <span class="gradient">MemberEra</span></h2>
-  <p class="section-subtitle reveal">Everything you need to grow your community.</p>
-  <div class="features">
-    <div class="feature reveal">
-      <div class="feature-icon">🚀</div>
-      <h3>Lightning Fast</h3>
-      <p>Members are added within seconds. No waiting, no delays.</p>
+  <div class="container">
+    <div class="section-label reveal">Why Choose Us</div>
+    <h2 class="section-title reveal">Why <span class="gradient">MemberEra</span></h2>
+    <p class="section-subtitle reveal">Everything you need to grow your community — completely free.</p>
+    <div class="features">
+      <div class="feature reveal">
+        <div class="feature-icon">🚀</div>
+        <h3>Lightning Fast</h3>
+        <p>Members are added within seconds. No waiting, no delays, no queues longer than necessary.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon">💯</div>
+        <h3>100% Free</h3>
+        <p>No payments, no subscriptions, no hidden fees. Our service is free and always will be.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon">👥</div>
+        <h3>Real Members</h3>
+        <p>Real Discord users from our community. No bots, no fake accounts, no inflated numbers.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon">🔒</div>
+        <h3>Secure OAuth</h3>
+        <p>We use Discord's official OAuth2 system. Your account stays safe and you can revoke access anytime.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon">🎯</div>
+        <h3>Easy To Use</h3>
+        <p>Three commands. That's all you need. Simple enough for anyone to use immediately.</p>
+      </div>
+      <div class="feature reveal">
+        <div class="feature-icon">⚡</div>
+        <h3>Instant Orders</h3>
+        <p>Our smart queue system processes orders in the order they're placed. No delays.</p>
+      </div>
     </div>
-    <div class="feature reveal">
-      <div class="feature-icon">💯</div>
-      <h3>100% Free</h3>
-      <p>No payments, no subscriptions, no hidden fees. Ever.</p>
-    </div>
-    <div class="feature reveal">
-      <div class="feature-icon">👥</div>
-      <h3>Real Members</h3>
-      <p>Real Discord users from our community. No bots, no fake accounts.</p>
-    </div>
-    <div class="feature reveal">
-      <div class="feature-icon">🔒</div>
-      <h3>Secure OAuth</h3>
-      <p>We use Discord's official OAuth2 — your account stays safe.</p>
-    </div>
-    <div class="feature reveal">
-      <div class="feature-icon">🎯</div>
-      <h3>Easy To Use</h3>
-      <p>Three commands. That's all you need to grow your server.</p>
-    </div>
-    <div class="feature reveal">
-      <div class="feature-icon">⚡</div>
-      <h3>Instant Orders</h3>
-      <p>Queue system processes orders in the order they're placed.</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="container">
+    <div class="section-label reveal">By The Numbers</div>
+    <h2 class="section-title reveal">Growing <span class="gradient">Community</span></h2>
+    <p class="section-subtitle reveal">MemberEra is trusted by server owners around the world.</p>
+    <div class="stats-strip">
+      <div class="stat reveal">
+        <div class="stat-value">100%</div>
+        <div class="stat-label">Free</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-value">24/7</div>
+        <div class="stat-label">Online</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-value">&lt;5s</div>
+        <div class="stat-label">Order Time</div>
+      </div>
+      <div class="stat reveal">
+        <div class="stat-value">∞</div>
+        <div class="stat-label">Possibilities</div>
+      </div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<section id="start" class="cta">
-  <div class="cta-card reveal">
-    <h2>Ready To Grow?</h2>
-    <p>Join our Discord server and run <code style="background: rgba(59,130,246,0.15); color: var(--blue-light); padding: 3px 8px; border-radius: 6px;">!authlink</code> to get started. It takes less than a minute.</p>
-    <a href="https://discord.gg/G32jHZwsee" target="_blank" class="btn btn-primary">
-      Join Discord Server
-    </a>
+<section id="start">
+  <div class="container">
+    <div class="cta-card reveal">
+      <div class="cta-glow"></div>
+      <h2>Ready To Grow?</h2>
+      <p>Join our Discord server and run <code style="background: rgba(59,130,246,0.15); color: #60A5FA; padding: 3px 9px; border-radius: 6px; font-family: 'SF Mono', Consolas, monospace; font-size: 13px;">!authlink</code> to get started. It takes less than a minute.</p>
+      <a href="https://discord.gg/G32jHZwsee" target="_blank" rel="noopener" class="btn btn-primary">Join Discord Server</a>
+    </div>
   </div>
 </section>
 
+<!-- FOOTER -->
 <footer>
-  <p>MemberEra © 2026 &nbsp;·&nbsp; <a href="https://discord.gg/G32jHZwsee">Support Server</a></p>
+  <img src="/bot.png" alt="MemberEra" class="footer-logo" onerror="this.style.display='none'">
+  <p>MemberEra © 2026 &nbsp;·&nbsp; <a href="https://discord.gg/G32jHZwsee">Discord Server</a></p>
 </footer>
 
 <script>
-// Scroll reveal
-const revealElements = document.querySelectorAll('.reveal');
+// Nav scroll effect
+const nav = document.getElementById('nav');
+let ticking = false;
+window.addEventListener('scroll', () => {
+  if (!ticking) {
+    window.requestAnimationFrame(() => {
+      if (window.scrollY > 40) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+      ticking = false;
+    });
+    ticking = true;
+  }
+}, { passive: true });
+
+// Scroll reveal with stagger
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry, i) => {
+  entries.forEach((entry) => {
     if (entry.isIntersecting) {
+      const siblings = Array.from(entry.target.parentElement.querySelectorAll('.reveal'));
+      const index = siblings.indexOf(entry.target);
       setTimeout(() => {
         entry.target.classList.add('visible');
-      }, i * 80);
+      }, index * 70);
       observer.unobserve(entry.target);
     }
   });
-}, { threshold: 0.1 });
+}, { threshold: 0.12, rootMargin: '0px 0px -60px 0px' });
 
-revealElements.forEach(el => observer.observe(el));
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// Smooth scroll fallback for old browsers
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', (e) => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
 </script>
 
 </body>
