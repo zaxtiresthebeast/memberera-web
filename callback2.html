@@ -482,4 +482,38 @@ function renderError(title, msg) {
   const errorEl = document.getElementById("error");
 
   if (!code || !state) {
-    renderError("Authorization Failed", "Missing code or state in URL. Please restart the flow
+    renderError("Authorization Failed", "Missing code or state in URL. Please restart the flow with !authlink.");
+    errorEl.textContent = "Missing params. Run !authlink again.";
+    return;
+  }
+
+  try {
+    // 1. Save bot2_code
+    let oauthBlob = safeParse(await redisGet("memberera:oauthCodes"));
+    if (!oauthBlob[state] || typeof oauthBlob[state] !== "object") {
+      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    }
+    oauthBlob[state].bot2_code = code;
+    await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
+
+    // 2. Generate AUTH key
+    const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    let authKey = "AUTH-";
+    for (let i = 0; i < 6; i++) authKey += chars[Math.floor(Math.random() * chars.length)];
+
+    // 3. Save authCode → state
+    let authBlob = safeParse(await redisGet("memberera:authCodes"));
+    authBlob[authKey] = { state, created_at: Date.now() };
+    await redisSet("memberera:authCodes", JSON.stringify(authBlob));
+
+    // 4. Show it
+    renderSuccess(authKey);
+  } catch (e) {
+    renderError("Authorization Failed", e.message);
+    errorEl.textContent = `Error: ${e.message}`;
+  }
+})();
+</script>
+
+</body>
+</html>
