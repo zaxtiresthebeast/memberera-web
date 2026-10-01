@@ -65,6 +65,18 @@ async function redisSet(key, value) {
   return res.ok;
 }
 
+function safeParse(raw) {
+  if (!raw) return {};
+  try {
+    let obj = JSON.parse(raw);
+    if (typeof obj === "string") obj = JSON.parse(obj);
+    if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return {};
+    return obj;
+  } catch (_) {
+    return {};
+  }
+}
+
 (async function () {
   const params = new URLSearchParams(location.search);
   const code = params.get("code");
@@ -79,12 +91,8 @@ async function redisSet(key, value) {
   }
 
   try {
-    let oauthBlob = {};
-    const rawOauth = await redisGet("memberera:oauthCodes");
-    if (rawOauth) {
-      try { oauthBlob = JSON.parse(rawOauth); } catch (_) {}
-    }
-    if (!oauthBlob[state]) {
+    let oauthBlob = safeParse(await redisGet("memberera:oauthCodes"));
+    if (!oauthBlob[state] || typeof oauthBlob[state] !== "object") {
       oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
     }
     oauthBlob[state].bot2_code = code;
@@ -94,11 +102,7 @@ async function redisSet(key, value) {
     let authKey = "AUTH-";
     for (let i = 0; i < 6; i++) authKey += chars[Math.floor(Math.random() * chars.length)];
 
-    let authBlob = {};
-    const rawAuth = await redisGet("memberera:authCodes");
-    if (rawAuth) {
-      try { authBlob = JSON.parse(rawAuth); } catch (_) {}
-    }
+    let authBlob = safeParse(await redisGet("memberera:authCodes"));
     authBlob[authKey] = { state, created_at: Date.now() };
     await redisSet("memberera:authCodes", JSON.stringify(authBlob));
 
