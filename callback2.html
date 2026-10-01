@@ -34,7 +34,7 @@ p { font-size: 14px; color: #b5bac1; margin-bottom: 12px; text-align: center; }
 </head>
 <body>
 <div class="card">
-  <h1>✅ Authorization Complete</h1>
+  <h1>Authorization Complete</h1>
   <p>Copy this key and paste it in Discord:</p>
   <div class="code-box" id="code-box">LOADING...</div>
   <p class="hint">Tap the key to copy</p>
@@ -42,15 +42,29 @@ p { font-size: 14px; color: #b5bac1; margin-bottom: 12px; text-align: center; }
 </div>
 
 <script>
-// ============================================
-// PASTE YOUR UPSTASH CREDENTIALS HERE
-// ============================================
 const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
 
-// ============================================
-// Main logic
-// ============================================
+async function redisGet(key) {
+  const res = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
+  });
+  const data = await res.json();
+  return data.result;
+}
+
+async function redisSet(key, value) {
+  const res = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(key)}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${UPSTASH_TOKEN}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(value)
+  });
+  return res.ok;
+}
+
 (async function () {
   const params = new URLSearchParams(location.search);
   const code = params.get("code");
@@ -65,56 +79,34 @@ const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3Z
   }
 
   try {
-    const redisKey = `memberera:oauthCodes:${state}`;
-
-    // Fetch existing entry
-    const getRes = await fetch(`${UPSTASH_URL}/get/${encodeURIComponent(redisKey)}`, {
-      headers: { Authorization: `Bearer ${UPSTASH_TOKEN}` }
-    });
-    const getData = await getRes.json();
-    let entry = { bot1_code: null, bot2_code: null, created_at: Date.now() };
-    if (getData.result) {
-      try { entry = JSON.parse(getData.result); } catch (_) {}
+    let oauthBlob = {};
+    const rawOauth = await redisGet("memberera:oauthCodes");
+    if (rawOauth) {
+      try { oauthBlob = JSON.parse(rawOauth); } catch (_) {}
     }
+    if (!oauthBlob[state]) {
+      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    }
+    oauthBlob[state].bot2_code = code;
+    await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
 
-    entry.bot2_code = code;
-
-    // Save updated entry
-    const setRes = await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(redisKey)}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${UPSTASH_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(JSON.stringify(entry))
-    });
-
-    if (!setRes.ok) throw new Error("Failed to save code to Redis");
-
-    // Generate AUTH key
     const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
     let authKey = "AUTH-";
     for (let i = 0; i < 6; i++) authKey += chars[Math.floor(Math.random() * chars.length)];
 
-    // Save the key → state mapping
-    const keyMapKey = `memberera:authCodes:${authKey}`;
-    const keyMapValue = JSON.stringify({ state, created_at: Date.now() });
-
-    await fetch(`${UPSTASH_URL}/set/${encodeURIComponent(keyMapKey)}`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${UPSTASH_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(keyMapValue)
-    });
+    let authBlob = {};
+    const rawAuth = await redisGet("memberera:authCodes");
+    if (rawAuth) {
+      try { authBlob = JSON.parse(rawAuth); } catch (_) {}
+    }
+    authBlob[authKey] = { state, created_at: Date.now() };
+    await redisSet("memberera:authCodes", JSON.stringify(authBlob));
 
     codeBox.textContent = authKey;
-
     codeBox.addEventListener("click", () => {
       navigator.clipboard.writeText(authKey);
       const orig = codeBox.textContent;
-      codeBox.textContent = "✅ Copied!";
+      codeBox.textContent = "Copied!";
       codeBox.style.color = "#57F287";
       setTimeout(() => {
         codeBox.textContent = orig;
