@@ -11,7 +11,6 @@
   --blue: #3B82F6;
   --blue-bright: #60A5FA;
   --yellow: #FACC15;
-  --yellow-bright: #FDE047;
   --green: #22c55e;
   --red: #ef4444;
   --bg: #070a12;
@@ -31,29 +30,8 @@ html, body {
   align-items: center;
   justify-content: center;
   padding: 24px;
-  overflow-x: hidden;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-}
-.bg-layer { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-.bg-gradient {
-  background:
-    radial-gradient(ellipse 60% 40% at 15% 15%, rgba(59, 130, 246, 0.15), transparent 60%),
-    radial-gradient(ellipse 50% 35% at 85% 85%, rgba(250, 204, 21, 0.10), transparent 60%);
-}
-.bg-blobs { overflow: hidden; }
-.blob { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.4; will-change: transform; transform: translateZ(0); }
-.blob-1 { width: 400px; height: 400px; background: radial-gradient(circle, var(--blue) 0%, transparent 70%); top: -120px; left: -120px; animation: driftA 20s ease-in-out infinite; }
-.blob-2 { width: 350px; height: 350px; background: radial-gradient(circle, var(--yellow) 0%, transparent 70%); bottom: -100px; right: -100px; animation: driftB 24s ease-in-out infinite; }
-@keyframes driftA { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(70px, 50px, 0) scale(1.15); } }
-@keyframes driftB { 0%, 100% { transform: translate3d(0, 0, 0) scale(1); } 50% { transform: translate3d(-60px, -50px, 0) scale(1.1); } }
-.bg-grid {
-  background-image:
-    linear-gradient(rgba(59, 130, 246, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.06) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
 }
 .card {
   background: linear-gradient(180deg, var(--card) 0%, var(--bg-2) 100%);
@@ -62,26 +40,17 @@ html, body {
   width: 100%;
   max-width: 460px;
   padding: 40px 32px 36px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.06);
-  position: relative;
-  overflow: hidden;
-  opacity: 0;
-  animation: cardIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
-@keyframes cardIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--blue-bright), var(--yellow), transparent); animation: borderShine 4s ease-in-out infinite; background-size: 200% 100%; }
-@keyframes borderShine { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
 .header { display: flex; align-items: center; gap: 14px; margin-bottom: 30px; padding-bottom: 22px; border-bottom: 1px solid var(--border); }
-.logo { width: 52px; height: 52px; border-radius: 14px; border: 2px solid rgba(59, 130, 246, 0.35); box-shadow: 0 0 24px rgba(59, 130, 246, 0.3); flex-shrink: 0; animation: logoFloat 4s ease-in-out infinite; }
-@keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-.brand h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.8px; background: linear-gradient(90deg, var(--blue-bright), var(--yellow)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-.brand p { font-size: 12px; color: var(--text-mute); margin-top: 2px; letter-spacing: 0.3px; }
-.status { border-radius: 14px; padding: 22px 20px; display: flex; gap: 16px; align-items: flex-start; margin-bottom: 22px; border: 1px solid; position: relative; overflow: hidden; animation: statusIn 0.5s 0.15s cubic-bezier(0.4, 0, 0.2, 1) backwards; }
-@keyframes statusIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.logo { width: 52px; height: 52px; border-radius: 14px; border: 2px solid rgba(59, 130, 246, 0.35); }
+.brand h1 { font-size: 18px; font-weight: 800; background: linear-gradient(90deg, var(--blue-bright), var(--yellow)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.brand p { font-size: 12px; color: var(--text-mute); margin-top: 2px; }
+.status { border-radius: 14px; padding: 22px 20px; display: flex; gap: 16px; align-items: flex-start; margin-bottom: 22px; border: 1px solid; }
 .status.success { background: rgba(34, 197, 94, 0.08); border-color: rgba(34, 197, 94, 0.28); }
 .status.error { background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.28); }
 .status.info { background: rgba(59, 130, 246, 0.08); border-color: rgba(59, 130, 246, 0.28); }
-.status-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 22px; }
+.status-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
 .status.success .status-icon { background: rgba(34, 197, 94, 0.15); }
 .status.error .status-icon { background: rgba(239, 68, 68, 0.15); }
 .status.info .status-icon { background: rgba(59, 130, 246, 0.15); }
@@ -89,31 +58,11 @@ html, body {
 .status.success .status-text h2 { color: #4ade80; }
 .status.error .status-text h2 { color: #f87171; }
 .status.info .status-text h2 { color: var(--blue-bright); }
-.status-text p { font-size: 13.5px; color: var(--text-dim); line-height: 1.55; }
-.loader-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; padding: 24px 0 8px; }
-.spinner { width: 48px; height: 48px; position: relative; }
-.spinner::before, .spinner::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; }
-.spinner::before { border-top-color: var(--blue-bright); border-right-color: var(--blue-bright); animation: spin 1s linear infinite; }
-.spinner::after { inset: 10px; border-bottom-color: var(--yellow); border-left-color: var(--yellow); animation: spin 1.4s linear infinite reverse; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.progress-bar { width: 100%; height: 3px; background: rgba(59, 130, 246, 0.1); border-radius: 999px; overflow: hidden; position: relative; }
-.progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue-bright), var(--yellow)); border-radius: 999px; width: 0%; animation: fill 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards; box-shadow: 0 0 12px rgba(96, 165, 250, 0.5); }
-@keyframes fill { from { width: 0%; } to { width: 100%; } }
-.loader-text { font-size: 13px; color: var(--text-mute); letter-spacing: 0.3px; }
-.dots::after { content: ''; animation: dots 1.4s steps(4, end) infinite; }
-@keyframes dots { 0%, 20% { content: ''; } 40% { content: '.'; } 60% { content: '..'; } 80%, 100% { content: '...'; } }
-.error-msg { color: #f87171; font-size: 13px; margin-top: 14px; text-align: center; font-weight: 500; min-height: 18px; }
+.status-text p { font-size: 13.5px; color: var(--text-dim); }
+.debug { background: #000; border: 1px solid var(--border); border-radius: 10px; padding: 14px; font-family: monospace; font-size: 11px; color: #94a3b8; margin-top: 20px; white-space: pre-wrap; word-break: break-all; max-height: 200px; overflow-y: auto; }
 </style>
 </head>
 <body>
-
-<div class="bg-layer bg-gradient"></div>
-<div class="bg-layer bg-grid"></div>
-<div class="bg-layer bg-blobs">
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
-</div>
-
 <div class="card">
   <div class="header">
     <img src="/bot.png" alt="MemberEra" class="logo" onerror="this.style.display='none'">
@@ -122,92 +71,97 @@ html, body {
       <p>Authorization Portal</p>
     </div>
   </div>
-
   <div class="status info" id="status-box">
     <div class="status-icon" id="status-icon">🔐</div>
     <div class="status-text">
-      <h2 id="status-title">Bot 1 Authorized</h2>
-      <p id="status-msg">Redirecting you to Bot 2 authorization...</p>
+      <h2 id="status-title">Checking</h2>
+      <p id="status-msg">Please wait...</p>
     </div>
   </div>
-
-  <div class="loader-wrap">
-    <div class="spinner"></div>
-    <div class="progress-bar">
-      <div class="progress-fill"></div>
-    </div>
-    <div class="loader-text dots">Please wait</div>
-  </div>
-
-  <p class="error-msg" id="error"></p>
+  <div class="debug" id="debug">Starting...</div>
 </div>
-
 <script>
 const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
 const UPSTASH_TOKEN = "ggAAAAAABNcGAAIgcDLAzy4hj0gj5JdM9yXvr6bF2HjgBS0yU2Va4KufMQf7pg";
 const BOT2_CLIENT_ID = "1553955545311092846";
 const BOT2_REDIRECT_URI = "https://memberera.kdns.fr/callback2.html";
 
+const debug = document.getElementById("debug");
+function log(msg) {
+  debug.textContent += "\n" + msg;
+  console.log(msg);
+}
+
 function setStatus(type, icon, title, msg) {
-  const box = document.getElementById("status-box");
-  box.className = "status " + type;
+  document.getElementById("status-box").className = "status " + type;
   document.getElementById("status-icon").textContent = icon;
   document.getElementById("status-title").textContent = title;
   document.getElementById("status-msg").textContent = msg;
 }
 
-async function redisGet(key) {
-  const res = await fetch(UPSTASH_URL + "/get/" + encodeURIComponent(key), {
-    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
-  });
-  const data = await res.json();
-  return data.result;
-}
-
-async function redisSet(key, rawString) {
-  const res = await fetch(UPSTASH_URL + "/set/" + encodeURIComponent(key) + "/" + encodeURIComponent(rawString), {
-    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
-  });
-  const data = await res.json();
-  return !data.error;
-}
-
-function safeParse(raw) {
-  if (!raw) return {};
-  try {
-    let obj = JSON.parse(raw);
-    if (typeof obj === "string") obj = JSON.parse(obj);
-    if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return {};
-    return obj;
-  } catch (_) { return {}; }
-}
-
 (async function () {
+  log("Page loaded");
   const params = new URLSearchParams(location.search);
   const code = params.get("code");
   const state = params.get("state");
-  const errorEl = document.getElementById("error");
+  log("code: " + (code ? code.slice(0, 10) + "..." : "MISSING"));
+  log("state: " + (state ? state.slice(0, 10) + "..." : "MISSING"));
 
   if (!code || !state) {
-    setStatus("error", "❌", "Authorization Failed", "Missing code or state in URL. Please restart the flow by running !authlink in Discord.");
-    document.querySelector(".loader-wrap").style.display = "none";
-    errorEl.textContent = "Missing params. Run !authlink again.";
+    setStatus("error", "❌", "Authorization Failed", "Missing params");
+    log("EXIT: missing code or state");
     return;
   }
 
   try {
-    const raw = await redisGet("memberera:oauthCodes");
-    const oauthBlob = safeParse(raw);
+    const key = "memberera:oauthCodes";
+    const getURL = UPSTASH_URL + "/get/" + encodeURIComponent(key);
+    log("GET URL: " + getURL);
 
-    if (!oauthBlob[state] || typeof oauthBlob[state] !== "object") {
-      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    const getRes = await fetch(getURL, {
+      headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
+    });
+    log("GET status: " + getRes.status);
+    const getData = await getRes.json();
+    log("GET response: " + JSON.stringify(getData).slice(0, 300));
+
+    if (getData.error) throw new Error("GET failed: " + getData.error);
+
+    let blob = {};
+    if (getData.result) {
+      try {
+        blob = JSON.parse(getData.result);
+        if (typeof blob === "string") blob = JSON.parse(blob);
+        if (typeof blob !== "object" || blob === null || Array.isArray(blob)) blob = {};
+      } catch (e) {
+        log("parse error: " + e.message);
+        blob = {};
+      }
     }
-    oauthBlob[state].bot1_code = code;
+    log("existing keys: " + Object.keys(blob).length);
 
-    const ok = await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
-    if (!ok) throw new Error("Failed to save authorization to our records.");
+    if (!blob[state] || typeof blob[state] !== "object") {
+      blob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    }
+    blob[state].bot1_code = code;
+    const raw = JSON.stringify(blob);
+    log("payload length: " + raw.length);
+
+    const setURL = UPSTASH_URL + "/set/" + encodeURIComponent(key) + "/" + encodeURIComponent(raw);
+    log("SET URL length: " + setURL.length);
+
+    const setRes = await fetch(setURL, {
+      headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
+    });
+    log("SET status: " + setRes.status);
+    const setData = await setRes.json();
+    log("SET response: " + JSON.stringify(setData).slice(0, 300));
+
+    if (setData.error) throw new Error("SET failed: " + setData.error);
+    if (setData.result !== "OK") throw new Error("SET did not return OK: " + JSON.stringify(setData));
 
     setStatus("success", "✅", "Bot 1 Authorized", "Redirecting you to Bot 2 authorization...");
+    log("SUCCESS — redirecting in 900ms");
 
     const bot2Url =
       "https://discord.com/oauth2/authorize" +
@@ -220,11 +174,9 @@ function safeParse(raw) {
     setTimeout(() => { window.location.href = bot2Url; }, 900);
   } catch (e) {
     setStatus("error", "❌", "Authorization Failed", e.message);
-    document.querySelector(".loader-wrap").style.display = "none";
-    errorEl.textContent = "Error: " + e.message;
+    log("EXCEPTION: " + e.message);
   }
 })();
 </script>
-
 </body>
 </html>
