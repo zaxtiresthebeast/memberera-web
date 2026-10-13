@@ -132,8 +132,6 @@ html, body {
 </div>
 
 <script>
-const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
-const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
 const BOT2_CLIENT_ID = "1553955545311092846";
 const BOT2_REDIRECT_URI = "https://www.memberera.kdns.fr/callback2.html";
 
@@ -142,35 +140,6 @@ function setStatus(type, icon, title, msg) {
   document.getElementById("status-icon").textContent = icon;
   document.getElementById("status-title").textContent = title;
   document.getElementById("status-msg").textContent = msg;
-}
-
-async function redisGet(key) {
-  const res = await fetch(UPSTASH_URL + "/get/" + encodeURIComponent(key), {
-    method: "POST",
-    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
-  });
-  const data = await res.json();
-  return data.result;
-}
-
-async function redisSet(key, rawString) {
-  const res = await fetch(UPSTASH_URL + "/set/" + encodeURIComponent(key) + "/" + encodeURIComponent(rawString), {
-    method: "POST",
-    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error);
-  return true;
-}
-
-function safeParse(raw) {
-  if (!raw) return {};
-  try {
-    let obj = JSON.parse(raw);
-    if (typeof obj === "string") obj = JSON.parse(obj);
-    if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return {};
-    return obj;
-  } catch (_) { return {}; }
 }
 
 (async function () {
@@ -187,15 +156,16 @@ function safeParse(raw) {
   }
 
   try {
-    const raw = await redisGet("memberera:oauthCodes");
-    const oauthBlob = safeParse(raw);
-
-    if (!oauthBlob[state] || typeof oauthBlob[state] !== "object") {
-      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
+    const res = await fetch("/api/callback1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, state })
+    });
+    let data = {};
+    try { data = await res.json(); } catch (_) {}
+    if (!res.ok || data.error) {
+      throw new Error(data.error || ("Server returned " + res.status));
     }
-    oauthBlob[state].bot1_code = code;
-
-    await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
 
     const bot2Url =
       "https://discord.com/oauth2/authorize" +
