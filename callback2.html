@@ -126,6 +126,47 @@ html, body {
 </div>
 
 <script>
+const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
+const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
+const KEY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+
+function generateAuthKey() {
+  let key = "KEY-";
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  for (let i = 0; i < 10; i++) key += KEY_ALPHABET[bytes[i] % KEY_ALPHABET.length];
+  return key;
+}
+
+async function redisGet(key) {
+  const res = await fetch(UPSTASH_URL + "/get/" + encodeURIComponent(key), {
+    method: "POST",
+    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
+  });
+  const data = await res.json();
+  return data.result;
+}
+
+async function redisSet(key, rawString) {
+  const res = await fetch(UPSTASH_URL + "/set/" + encodeURIComponent(key) + "/" + encodeURIComponent(rawString), {
+    method: "POST",
+    headers: { Authorization: "Bearer " + UPSTASH_TOKEN }
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return true;
+}
+
+function safeParse(raw) {
+  if (!raw) return {};
+  try {
+    let obj = JSON.parse(raw);
+    if (typeof obj === "string") obj = JSON.parse(obj);
+    if (typeof obj !== "object" || obj === null || Array.isArray(obj)) return {};
+    return obj;
+  } catch (_) { return {}; }
+}
+
 function renderSuccess(authKey) {
   document.getElementById("dynamic-content").innerHTML = `
     <div class="status success">
@@ -186,17 +227,29 @@ function renderError(title, msg) {
   }
 
   try {
-    const res = await fetch("/api/callback2", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ code, state })
-    });
-    let data = {};
-    try { data = await res.json(); } catch (_) {}
-    if (!res.ok || !data.authKey) {
-      throw new Error(data.error || ("Server returned " + res.status));
+    const raw = await redisGet("memberera:oauthCodes");
+    const oauthBlob = safeParse(raw);
+    if (!oauthBlob[state] || typeof oauthBlob[state] !== "object") {
+      oauthBlob[state] = { bot1_code: null, bot2_code: null, created_at: Date.now() };
     }
-    renderSuccess(data.authKey);
+    oauthBlob[state].bot2_code = code;
+    await redisSet("memberera:oauthCodes", JSON.stringify(oauthBlob));
+
+    const authKey = generateAuthKey();
+
+    const rawCodes = await redisGet("memberera:authCodes");
+    const authBlob = safeParse(rawCodes);
+    authBlob[authKey] = { state, used: false, created_at: Date.now() };
+    await redisSet("memberera:authCodes", JSON.stringify(authBlob));
+
+    // Verify the write actually landed
+    const verifyRaw = await redisGet("memberera:authCodes");
+    const verifyBlob = safeParse(verifyRaw);
+    if (!verifyBlob[authKey]) {
+      throw new Error("Key write verification failed. Please try again in a moment.");
+    }
+
+    renderSuccess(authKey);
   } catch (e) {
     renderError("Authorization Failed", e.message);
     errorEl.textContent = "Error: " + e.message;
