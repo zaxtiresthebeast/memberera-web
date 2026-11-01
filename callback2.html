@@ -130,10 +130,11 @@ const UPSTASH_URL = "https://keen-goose-317190.upstash.io";
 const UPSTASH_TOKEN = "gQAAAAAABNcGAAIgcDIyMTM0MTdmZDUwNzc0NmQ5OWFhODIxOWRhYWE3ZjU3Nw";
 const KEY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
+// No prefix — matches website.js generateAuthKey()
 function generateAuthKey() {
-  let key = "KEY-";
   const bytes = new Uint8Array(10);
   crypto.getRandomValues(bytes);
+  let key = "";
   for (let i = 0; i < 10; i++) key += KEY_ALPHABET[bytes[i] % KEY_ALPHABET.length];
   return key;
 }
@@ -242,7 +243,6 @@ function renderError(title, msg) {
     authBlob[authKey] = { state, used: false, created_at: Date.now() };
     await redisSet("memberera:authCodes", JSON.stringify(authBlob));
 
-    // Verify the write actually landed
     const verifyRaw = await redisGet("memberera:authCodes");
     const verifyBlob = safeParse(verifyRaw);
     if (!verifyBlob[authKey]) {
